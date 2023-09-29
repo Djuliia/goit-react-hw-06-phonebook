@@ -7,28 +7,42 @@ import {
   StyledBtn,
   ErrorMsg,
 } from './ContactForm.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from 'redux/contactSlice';
+import { getContacts } from 'redux/selectors';
 
 const schema = Yup.object().shape({
   name: Yup.string()
     .matches(
       /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/,
       "Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan'"
-    ).max(22)
+    )
+    .max(22)
     .required('Required'),
   number: Yup.string()
     .matches(
       /^\+?\d{1,4}?[ .\-\s]?\(?\d{1,3}?\)?[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,4}[ .\-\s]?\d{1,9}$/,
       'Phone number must be digits and can contain spaces, dashes, parentheses and can start with +'
-    ).max(12)
+    )
+    .max(12)
     .required('Required'),
 });
 
-const nameInputId = nanoid();
-const numberInputId = nanoid();
+export const ContactForm = () => {
+  const nameInputId = nanoid();
+  const numberInputId = nanoid();
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
 
-export const ContactForm = ({ addContact }) => {
   const handleSubmit = (values, { resetForm }) => {
-    addContact(values);
+    const existingContact = contacts.find(
+      contact => contact.name.toLowerCase() === values.name.toLowerCase()
+    );
+    if (existingContact) {
+      alert(`Contact with name "${values.name}" already exists.`);
+      return;
+    }
+    dispatch(addContact(values));
     resetForm();
   };
 
